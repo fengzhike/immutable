@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+</head>
+<body>
+	Immutable 是 Facebook 开发的不可变数据集合。不可变数据一旦创建就不能被修改，是的应用开发更简单，允许使用函数式编程技术，比如惰性评估。Immutable JS 提供一个惰性 Sequence，允许高效的队列方法链，类似 map 和 filter ，不用创建中间代表。
+
+immutable 通过惰性队列和哈希映射提供 Sequence, Range, Repeat, Map, OrderedMap, Set 和一个稀疏 Vector。
+
+开始使用
+
+使用 npm 安装 immutable：
+
+1 npm install immutable
+每个模块都要包括：
+
+1 var Immutable = require('immutable'); 
+var map = Immutable.Map({a:1, b:2, c:3});
+浏览器
+
+在浏览器中使用 immutable，需要下载 dist/Immutable.min.js。
+
+然后，作为脚本标签添加到你的页面中：
+
+&lt;script src="Immutable.min.js"&lt; &lt;/script&lt; 
+&lt;script&lg;
+ var map = Immutable.Map({a:1, b:2, c:3});
+ map = map.set('b', 20);
+ map.get('b'); // 20 
+&lt;/script &lg;
+或者使用 AMD 加载器 (比如 RequireJS):
+require(['./Immutable.min.js'], function (Immutable) {
+     var map = Immutable.Map({a:1, b:2, c:3});
+     map = map.set('b', 20);
+     map.get('b'); // 20 });
+
+
+
+
+</body>
+</html>

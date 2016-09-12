@@ -1,0 +1,322 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>HTML CSS学习笔记第？页</title>
+    <style>
+        body{margin: 0;}
+        ol,pre,li{margin: 0;padding:0; list-style: none;}
+        a{text-decoration: none;}
+        a:hover{text-decoration: underline;color:red;}
+        ol li{vertical-align: top;overflow: hidden;padding-left:30px;min-height: 56px;}
+        ol li span{float:left;width:10px;height:28px;text-align: center;line-height: 28px;}
+        ol li pre{font:18px/28px "宋体";float:left;max-width: 1200px;word-break:break-all;padding-left: 40px;}
+    </style>
+    <script>
+     window.onload=function(){
+       var oUl=document.getElementById("list");
+       var aLi=oUl.getElementsByTagName("li");
+      var oSpan=oUl.getElementsByTagName("span");
+       var arrColor=["#cff","#ccc"];
+         for(var i=0;i<aLi.length;i++){
+          aLi[i].index=i;
+          aLi[i].style.backgroundColor= arrColor[i%arrColor.length]; 
+          oSpan[i].innerHTML=i+1+"  ";
+       }
+        
+     };
+    </script>
+</head>
+<body>
+    <ol id="list">
+        <li>
+            <span></span>
+            <pre><h2>Immutable</h2>
+2016/9/12immutable学习
+             </pre>
+        </li>
+       <li>
+            <span></span>
+            <pre><h2>一,深复制与浅复制示例</h2>
+let obj = {
+	a: 1,
+	arr:[1,2]
+};
+let obj1 = obj; //浅复制
+obj1.a = 2;
+console.log(obj)//{a:2,arr:[1,2]};
+
+let obj = {
+	a:1,
+	arr:[1,2]
+};
+let obj2 = deepCopy(obj); //深复制
+obj2.a = 2;
+console.log(obj) //{a:1,arr:[1,2]};
+<strong>因为JavaScript存储对象都是存地址的，所以浅复制会导致 obj 和 obj1指向同一块内存地址。
+而深复制一般都是开辟一块新的内存地址，将原对象的各个属性逐个复制出去。</strong>
+    
+             </pre>
+        </li>
+        <li>
+            <span></span>
+            <pre><h2>es6-Object.assign()方法</h2>
+深复制只有一层，之后为浅复制（除非再次使用Object.assign嵌套方式赋值）
+let obj = {
+	a:1,
+	arr:[1,2]
+};
+let obj1 = Object.assign({},obj);
+obj1.a = 2;
+//不变
+console.log(obj) //{a:1,arr:[1,2]};
+
+#第一层为深复制
+#第二层为浅复制
+
+let obj = {
+	a:{
+		b:20
+	},
+	arr:[1,2]
+};
+let obj1 = Object.assign({},obj);
+obj1.a.b = 2;
+//除非再次使用Object.assign嵌套方式赋值
+//变化
+console.log(obj)// {a:{b:2},arr:[1,2]};
+            
+             </pre>
+        </li>
+       <li>
+            <span></span>
+            <pre><h2>三，为什么要用immutable(不可变数据)</h2>
+第一种方式
+
+//recduer.js（cart）第一种方式
+case types.CART_PUT_MAIN + '_SUCCESS':
+    //更新数据
+    carts = state.main.carts; // carts 选中的id数组
+    id = action.param.id;
+    newState = {
+        ...state,
+        main:{
+            ...state.main,
+            itemObj:{
+                ...state.main.itemObj,
+                [id]:{
+                    ...state.main.itemObj[id],
+                    quantity:action.param.quantity
+                    
+                }
+            }
+        }
+    };
+    sum = sumCommon(carts, newState.main.itemObj);
+    newState = {
+        ...newState,
+        main:{
+            ...newState.main,
+            ...sum
+        }
+    };
+    return newState;
+    数据层的变化
+    componentWillReceiveProps(nextProps){
+	    console.log(nextProps); 
+	    //next：顾名思义是接收到的next->props，输出的是上面方法中的newState的值
+	    console.log(this.props);
+	    //cur：是当前的props的值，因为使用的是类immutable的方式，所以数据不变；
+	}
+第二种方式
+
+//recduer.js（cart）第一种方式
+case types.CART_PUT_MAIN + '_SUCCESS':
+    newState = Object.assign({}, state);
+    carts = newState.main.carts; // carts 选中的id数组
+    id = action.param.id;
+    //浅复制
+    newState.main.itemObj[id].quantity = action.param.quantity;;
+    sum = sumCommon(carts, newState.main.itemObj);
+
+    newState = Object.assign({}, newState, {
+        main: Object.assign({}, newState.main, sum)
+    });
+    return newState;  
+此时数据层变化
+componentWillReceiveProps(nextProps){
+    console.log(nextProps); 
+    //next：顾名思义是接收到的next->props，输出的是上面方法中的newState的值
+    console.log(this.props);
+    //cur：是当前的props的值，而这个由于浅复制，这个值被改变了
+}
+为了让数据变化更加可测，我们应当使用深复制相关，让我们自己的数据更加安全          
+             </pre>
+        </li>
+        <li>
+            <span></span>
+            <pre><h2>处理方法一：es7 ... 的方式</h2>
+直接{...obj}赋值属于浅复制，在修改值时{...obj,a:1}就起到了类深复制的效果
+let obj = {
+	a:0,
+	b:20
+}
+obj = {...obj,a:obj.a+1}
+而不是
+obj.a = obj.a + 1;
+
+同样的为了避免对 Object 的 in-place editing，数组也是一样：
+let arr = [
+    { id: 1,a: 1}
+]
+arr = [...arr, { id: 2,a: 2} ]
+
+而不是
+let arr = [
+    { id: 1, a:1}
+]
+arr.push({ id: 2, a,2});
+以这样的方式，无需immutable.js,可以让我们的应用程序状态是不可变(immutable)的。
+
+...注意事项及要求
+let obj = {
+    a: 20,
+    arr: [1, 2]
+};
+let obj1 = { ...obj }; //于obj1=obj一样
+
+obj1.a = 2 //不能使用这样赋值
+//变化 浅复制
+console.log(obj) // { a:2, arr: [1,2] };
+//...必须改用这样的赋值形式
+obj1 = { ...obj1 , a:2 }
+//深复制
+console.log(obj) // { a:20, arr: [1,2] };
+console.log(obj1) // { a:2, arr: [1,2] };
+...与Object.assign属于一个道理(这里和层级相关)
+
+//你可以将其转化为
+let obj = {
+    a: {
+        b: 20
+    },
+    arr: [1, 2]
+};
+let obj1 = obj
+obj1 = Object.assign({}, obj1, {
+    a: Object.assign({}, obj1.a,{b:2})
+});
+console.log(obj) //{ a:{b:20}, arr: [1,2] }
+console.log(obj) //{ a:{b:2}, arr: [1,2] }
+
+所以尽量使用...代替Object.assign
+            
+             </pre>
+        </li>
+       <li>
+            <span></span>
+            <pre><h2>处理方法二：使用immutable.js</h2>
+//深复制（类immutable）
+newState = {
+    ...state,
+    main:{
+        ...state.main,
+        itemObj:{
+            ...state.main.itemObj,
+            [id]:{
+                ...state.main.itemObj[id],
+                prop:action.param.props_str,
+                product_id:action.param.product_id,
+                price:action.param.price
+            }
+        }
+    }
+};
+//浅复制
+newState.main.itemObj[id].prop = action.param.props_str;
+//immutable.js方式
+...参考immutable的<a href="./immutable_api.html">api</a>;
+...参考immutable的<a href="./Immutable_detial.html">详解</a>;
+             </pre>
+        </li>
+        <li>
+            <span></span>
+            <pre><h2>PureRenderMixin使用请参考以下内容</h2>
+简单的说就是数据变化，比较前后两次的数据是否相同，判断是否重新render；否则你的父容器一改变数据，
+所有的子组件都重新渲染了，为了增加性能请使用pureRender
+
+<a href="http://zhenhua-lee.github.io/react/Immutable.html" target="_blank">Immutable.js及在React中的应用</a>
+<a href="https://zhuanlan.zhihu.com/p/20295971" target="_blank">Immutable 详解及 React 中实践</a>
+<a href="https://github.com/facebook/immutable-js/wiki/Immutable-as-React-state" target="_blank">Immutable as React state</a>
+
+
+            
+             </pre>
+        </li>
+       <li>
+            <span></span>
+            <pre><h2>封装好的PureRender如下：</h2>
+PureRender的使用要求：对于子组件需要什么参数传递什么，不要把一大块无用的数据引入，
+否则两次传入的this.props可能始终会不一样，导致PureRender无效
+
+'use strict';
+
+import { is } from 'immutable';
+
+let hasOwnProperty = Object.prototype.hasOwnProperty;
+function shallowEqual(objA, objB) {
+    if (objA === objB || is(objA, objB)) {
+        return true;
+    }
+
+    if (typeof objA !== 'object' || objA === null || typeof objB !== 'object' || objB === null) {
+        return false;
+    }
+
+    let keysA = Object.keys(objA);
+    let keysB = Object.keys(objB);
+
+    if (keysA.length !== keysB.length) {
+        return false;
+    }
+    let bHasOwnProperty = hasOwnProperty.bind(objB);
+    for (let i = 0; i < keysA.length; i++) {
+        if (!bHasOwnProperty(keysA[i]) || !is(objA[keysA[i]], objB[keysA[i]])) {
+            return false;
+        }
+    }
+
+    return true;
+}
+function shallowCompare(instance, nextProps, nextState) {
+    return !shallowEqual(instance.props, nextProps) || !shallowEqual(instance.state, nextState);
+}
+function shouldComponentUpdate(nextProps, nextState) {
+    return shallowCompare(this, nextProps, nextState);
+}
+function pureRenderDecorator(component) {
+    component.prototype.shouldComponentUpdate = shouldComponentUpdate;
+}
+module.exports = pureRenderDecorator;
+
+/*使用方式*/
+import pureRender from 'pure-render-decorator';
+//babel配置中引入一个transform-decorators-legacy插件
+@pureRender
+class XXX extends React.Component {
+    //...
+}
+            
+             </pre>
+        </li>
+         <li>
+            <span></span>
+           <pre><h2></h2>
+
+            
+             </pre>
+        </li>
+ 
+    </ol>
+</body>
+</html>
